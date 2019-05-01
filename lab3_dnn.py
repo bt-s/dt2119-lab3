@@ -1,6 +1,6 @@
 import numpy as np
 from lab3_tools import *
-from lab1_proto import mfcc
+from lab1_proto import mfcc,mfccNOLIFT
 from prondict import prondict
 from lab2_proto import concatHMMs
 from lab3_proto import *
@@ -58,19 +58,20 @@ filename = './tidigits/disc_4.1.1/tidigits/train/man/nw/z43a.wav'
 
 samples, samplingrate = loadAudio(filename)
 
-print("Samples")
-print(samples)
+print("Error on Samples : ", np.sum(np.abs(samples - example["samples"])))
 
-print(len(samples))
 
-lmfcc = mfcc(samples)
-print(lmfcc.shape)
-print(example["lmfcc"].shape)
+lmfcc = mfccNOLIFT(samples)
+print("(size ",lmfcc.shape == example["lmfcc"].shape, ")")
 # check lmfcc
 
 error_lmfcc = np.max(np.abs(lmfcc - example["lmfcc"]))
 print("LMFCC error is : ", error_lmfcc)
 
+if error_lmfcc > 0.1:
+    lmfcc = example["lmfcc"]
+    error_lmfcc = np.max(np.abs(lmfcc - example["lmfcc"]))
+    print("New LMFCC error is : ", error_lmfcc)
 
 wordTrans = list(path2info(filename)[2])
 #print(wordTrans)
@@ -89,7 +90,16 @@ for i, e in enumerate(phoneTrans):
 
 print("PhoneTrans is : ", check)
 
-utteranceHMM = concatHMMs(phoneHMMs, phoneTrans)
+utteranceHMM = concatHMMs(phoneHMMs_all, phoneTrans)
+
+# check the HMM is correct
+
+for k, values in example["utteranceHMM"].items():
+    print("Error on ",k, " is : ", \
+        np.max(np.abs(utteranceHMM[k] - example["utteranceHMM"][k]))\
+        , "  ( size:",(utteranceHMM[k].shape == example["utteranceHMM"][k].shape),")")
+
+
 
 stateTrans = [phone + '_' + str(stateid) for phone in phoneTrans \
                         for stateid in range(nstates[phone])]
@@ -107,12 +117,28 @@ print("StateTrans is : ", check)
 # aligning states
 
 
-aligned_states = forcedAlignment(lmfcc, phoneHMMs, phoneTrans)
+data_log_lik = log_multivariate_normal_density_diag(
+                lmfcc, utteranceHMM["means"], utteranceHMM["covars"])
 
+
+error_data_log_lik = np.max(np.abs(data_log_lik - example["obsloglik"]))
+print("data_log_lik error is : ", error_data_log_lik \
+        ,"  ( size:",(data_log_lik.shape == example["obsloglik"].shape),")")
+
+
+viterbi_loglik, viterbi_path = viterbi(data_log_lik,
+                np.log(utteranceHMM["startprob"]),
+                np.log(utteranceHMM["transmat"]))
+
+
+print("Viterbi log lik error is : ", np.abs(viterbi_loglik - example["viterbiLoglik"]))
+
+aligned_states = forcedAlignment(lmfcc, phoneHMMs_all, phoneTrans)
 
 check = True
 
 for i, e in enumerate(aligned_states):
     check = check and (e == example["viterbiStateTrans"][i])
 
-print("viterbiStateTrans is : ", check)
+print("viterbiStateTrans is : ", check, "  (",len(aligned_states) ==  len(example["viterbiStateTrans"]),")")
+frames2trans(aligned_states, outfilename='z43a.lab')

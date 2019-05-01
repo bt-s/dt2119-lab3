@@ -1,6 +1,6 @@
 import numpy as np
 import os
-from pysndfile import sndio
+
 from scipy.io import wavfile
 
 
@@ -29,7 +29,8 @@ def loadAudio(filename):
     the option dtype=np.int16 which keeps both the original data type and range
     of values.
     """
-    if True:
+    if False:
+        from pysndfile import sndio
         sndobj = sndio.read(filename)
         samplingrate = sndobj[1]
         samples = np.array(sndobj[0])*np.iinfo(np.int16).max
@@ -41,7 +42,7 @@ def loadAudio(filename):
         samples = f.readframes(f.getnframes())
         f.close()
 
-    if False:
+    if True:
         import soundfile as sf
         data, fs = sf.read(filename,dtype="int16")
         #fs, data = wavfile.read(filename)

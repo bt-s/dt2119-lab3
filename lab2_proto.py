@@ -50,6 +50,7 @@ def concatTwoHMMs(hmm1, hmm2):
     result_hmm["transmat"] = np.zeros([K,K])
     result_hmm["transmat"][:M,:M] = hmm1["transmat"]
     result_hmm["transmat"][M-1:,M-1:] = hmm2["transmat"]
+
     result_hmm["transmat"][:M-1,M-1:] = np.outer(hmm1["transmat"][:M-1,-1],hmm2["startprob"])
     result_hmm["transmat"][-1,-1] = 1
 
