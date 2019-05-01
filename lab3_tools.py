@@ -1,8 +1,8 @@
 import numpy as np
 import os
-#from pysndfile import sndio
+from pysndfile import sndio
 from scipy.io import wavfile
-import soundfile as sf
+
 
 
 def path2info(path):
@@ -29,12 +29,25 @@ def loadAudio(filename):
     the option dtype=np.int16 which keeps both the original data type and range
     of values.
     """
+    if True:
+        sndobj = sndio.read(filename)
+        samplingrate = sndobj[1]
+        samples = np.array(sndobj[0])*np.iinfo(np.int16).max
 
-    data, fs = sf.read(filename,dtype="int16")
-    #fs, data = wavfile.read(filename)
-    #sndobj = sndio.read(filename, dtype=np.int16)
-    samplingrate = fs #sndobj[1]
-    samples = data#np.array(data,dtype=np.int16) #np.array(sndobj[0])
+    if False:
+        import wave
+        f = wave.open(filename, mode="rb")
+        samplingrate = f.getframerate()
+        samples = f.readframes(f.getnframes())
+        f.close()
+
+    if False:
+        import soundfile as sf
+        data, fs = sf.read(filename,dtype="int16")
+        #fs, data = wavfile.read(filename)
+        #sndobj = sndio.read(filename, dtype=np.int16)
+        samplingrate = fs #sndobj[1]
+        samples = np.array(data, dtype="float64") #np.array(data,dtype=np.int16) #np.array(sndobj[0])
     return samples, samplingrate
 
 def frames2trans(sequence, outfilename=None, timestep=0.01):

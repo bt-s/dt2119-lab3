@@ -36,7 +36,9 @@ def concatTwoHMMs(hmm1, hmm2):
 
 
     M = hmm1["transmat"].shape[0]
-    K = M + 3
+
+    # parametric to allow sp
+    K = M + (hmm2["transmat"].shape[0] - 1)
 
     # arrays to concatenate
     sp_1 = hmm1["startprob"][:(M-1)]
@@ -99,6 +101,7 @@ def concatHMMs(hmmmodels, namelist):
     """
     concat = hmmmodels[namelist[0]]
     for idx in range(1,len(namelist)):
+        # print(namelist[idx])
         concat = concatTwoHMMs(concat, hmmmodels[namelist[idx]])
     return concat
 
@@ -197,7 +200,7 @@ def viterbi(log_emlik, log_startprob, log_transmat, forceFinalState=True):
     sN = np.argmax(B[-1, :])
 
     # Backtracking
-    st = np.zeros(N)
+    st = np.zeros(N, dtype="int32")
     st[-1] = sN
     for i in reversed(range(N-1)):
         st[i] = B[i+1, int(st[i+1])]

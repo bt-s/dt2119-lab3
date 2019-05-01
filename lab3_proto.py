@@ -1,5 +1,7 @@
 import numpy as np
 from lab3_tools import *
+from lab2_proto import *
+from lab2_tools import *
 
 def words2phones(wordList, pronDict, addSilence=True, addShortPause=True):
     """ word2phones: converts word level to phone level transcription adding silence
@@ -18,7 +20,7 @@ def words2phones(wordList, pronDict, addSilence=True, addShortPause=True):
 
 
     phone = ["sil"] + phone + ["sil"]
-        
+
     return phone
 
 
@@ -38,6 +40,28 @@ def forcedAlignment(lmfcc, phoneHMMs, phoneTrans):
        list of strings in the form phoneme_index specifying, for each time step
        the state from phoneHMMs corresponding to the viterbi path.
     """
+
+    HMM = concatHMMs(phoneHMMs, phoneTrans)
+    result = []
+
+
+    stateTrans = [phone + '_' + str(stateid) for phone in phoneTrans \
+                            for stateid in range(phoneHMMs[phone]['means'].shape[0])]
+
+
+    data_log_lik = log_multivariate_normal_density_diag(
+                    lmfcc, HMM["means"], HMM["covars"])
+    viterbi_loglik, viterbi_path = viterbi(data_log_lik,
+                    np.log(HMM["startprob"]),
+                    np.log(HMM["transmat"]))
+
+    #print(viterbi_path)
+
+    for i in viterbi_path:
+        result = result + [stateTrans[i]]
+
+    return result
+
 
 def hmmLoop(hmmmodels, namelist=None):
     """ Combines HMM models in a loop
