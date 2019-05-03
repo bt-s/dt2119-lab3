@@ -1,6 +1,6 @@
 import numpy as np
 from lab3_tools import *
-from lab1_proto import mfcc,mfccNOLIFT
+from lab1_proto import *
 from prondict import prondict
 from lab2_proto import concatHMMs
 from lab3_proto import *
@@ -61,7 +61,7 @@ samples, samplingrate = loadAudio(filename)
 print("Error on Samples : ", np.sum(np.abs(samples - example["samples"])))
 
 
-lmfcc = mfccNOLIFT(samples)
+lmfcc = mfcc(samples)
 print("(size ",lmfcc.shape == example["lmfcc"].shape, ")")
 # check lmfcc
 
@@ -141,4 +141,4 @@ for i, e in enumerate(aligned_states):
     check = check and (e == example["viterbiStateTrans"][i])
 
 print("viterbiStateTrans is : ", check, "  (",len(aligned_states) ==  len(example["viterbiStateTrans"]),")")
-frames2trans(aligned_states, outfilename='z43a.lab')
+#frames2trans(aligned_states, outfilename='z43a.lab')
