@@ -6,8 +6,10 @@ from prondict import prondict
 from lab2_proto import concatHMMs
 from lab3_proto import *
 
+ratio = np.load("ratio.npy")
+
 traindata = []
-all_model = np.load('lab2_models_all.npz')
+all_model = np.load('lab2_models_all.npz', allow_pickle=True)
 
 isolated = {}
 for digit in prondict.keys():
@@ -29,15 +31,17 @@ for root, dirs, files in os.walk('tidigits/disc_4.1.1/tidigits/train'):
             count = count + 1
             samples, samplingrate = loadAudio(filename)
 
-            ###...your code for feature extraction and forced alignment
             lmfcc, mspec = mfcc_both(samples)
+            lmfcc = np.multiply(lmfcc, np.dot(np.ones([lmfcc.shape[0], 1]),
+                ratio.reshape(len(ratio),1).T))
+
             wordTrans = list(path2info(filename)[2])
             phoneTrans = words2phones(wordTrans, prondict)
             targets = forcedAlignment(lmfcc, phoneHMMs_all, phoneTrans)
             targets = [stateList.index(t) for t in targets]
-            #print(targets)
             traindata.append({'filename': filename, 'lmfcc': lmfcc,
-            'mspec': 'mspec', 'targets': targets})
+                'mspec': mspec, 'targets': targets})
 
 
 print(float(count)/86.23, "%%")
+np.savez("traindata.npz", traindata= traindata)

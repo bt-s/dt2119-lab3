@@ -3,6 +3,14 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+
+tidigits
+train.npy
+val.npy
+traindata.npz
+testdata.npz
+
+
 # C extensions
 *.so
 

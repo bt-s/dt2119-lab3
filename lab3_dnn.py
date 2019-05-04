@@ -1,6 +1,6 @@
 import numpy as np
 from lab3_tools import *
-from lab1_proto import *
+from lab1_proto import mfcc
 from prondict import prondict
 from lab2_proto import concatHMMs
 from lab3_proto import *
@@ -9,11 +9,11 @@ from lab3_proto import *
 ######## INITIALIZATION ###################################
 ###########################################################
 
-example = np.load('lab3_example.npz')["example"]
+example = np.load('lab3_example.npz', allow_pickle=True)["example"]
 example.shape=(1,)
 example = example[0]
-one_speaker_model = np.load('lab2_models_onespkr.npz')
-all_model = np.load('lab2_models_all.npz')
+one_speaker_model = np.load('lab2_models_onespkr.npz', allow_pickle=True)
+all_model = np.load('lab2_models_all.npz', allow_pickle=True)
 
 isolated = {}
 for digit in prondict.keys():
@@ -37,8 +37,8 @@ for key in isolated.keys():
 phones = sorted(phoneHMMs.keys())
 nstates = {phone: phoneHMMs[phone]['means'].shape[0] for phone in phones}
 stateList = [ph + '_' + str(id) for ph in phones for id in range(nstates[ph])]
+print(len(stateList))
 
-#print(stateList)
 print(example.keys())
 np.seterr(divide='ignore')
 print("#"*50 + "\n" + "#"*50 + "\n" + "#"*50)
@@ -62,10 +62,22 @@ print("Error on Samples : ", np.sum(np.abs(samples - example["samples"])))
 
 
 lmfcc = mfcc(samples)
+lmfcc2 = mfcc(example["samples"])
+
+print(lmfcc-lmfcc2, "\n"*3)
+
+
 print("(size ",lmfcc.shape == example["lmfcc"].shape, ")")
 # check lmfcc
 
 error_lmfcc = np.max(np.abs(lmfcc - example["lmfcc"]))
+print(lmfcc)
+print("\n\n\n\n")
+print(example["lmfcc"])
+
+ratio =  example["lmfcc"] / lmfcc
+
+#np.save("ratio.npy", ratio[0,:])
 print("LMFCC error is : ", error_lmfcc)
 
 if error_lmfcc > 0.1:
