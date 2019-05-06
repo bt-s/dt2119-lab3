@@ -44,5 +44,5 @@ for root, dirs, files in os.walk('tidigits/disc_4.2.1/tidigits/test'):
             'mspec': mspec, 'targets': targets})
 
 
-print(float(count)/86.23, "%%")
-np.savez("testdata.npz", testdata=testdata)
+print(float(count)/87.00, "%%")
+np.savez("data/testdata.npz", testdata=testdata)

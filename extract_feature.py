@@ -44,4 +44,13 @@ for root, dirs, files in os.walk('tidigits/disc_4.1.1/tidigits/train'):
 
 
 print(float(count)/86.23, "%%")
-np.savez("traindata.npz", traindata= traindata)
+
+
+
+val   = np.concatenate((traindata[:461], traindata[-462:]))
+train = traindata[461:-462]
+
+np.save("data/val.npy", val)
+np.save("data/train.npy", train)
+
+np.savez("data/traindata.npz", traindata=traindata)

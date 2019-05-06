@@ -90,32 +90,32 @@ def run_network(data,labels, epochs = 10, batch_size=256):
 
     ### LAYERS
     # Layer 1
-    model.add(Dense(256, input_dim=no_features))
+    model.add(Dense(256, input_dim=no_features, kernel_initializer='he_normal'))
     model.add(Activation('relu'))
 
     # Layer 2
-    model.add(Dense(256, input_dim=256))
+    model.add(Dense(256, input_dim=256, kernel_initializer='he_normal'))
     model.add(Activation('relu'))
 
     # Layer 3
-    model.add(Dense(256, input_dim=256))
+    model.add(Dense(256, input_dim=256, kernel_initializer='he_normal'))
     model.add(Activation('relu'))
 
     # Layer 4
-    model.add(Dense(no_phonemes, input_dim=256))
+    model.add(Dense(no_phonemes, input_dim=256, kernel_initializer='he_normal'))
     model.add(Activation('softmax'))
 
 
     ### COMPILER
-    model.compile(optimizer="rmsprop",
+    model.compile(optimizer="adam",
                   loss="categorical_crossentropy",
-                  metrics=["accuracy", "categorical_accuracy", "mae"])
+                  metrics=["accuracy", "categorical_accuracy"])
     ### TRAINING
     #data   = np.random.random((1000, 13))
     #labels = np.random.randint(61, size=(1000, 1))
     #one_hot_labels = to_categorical(labels, num_classes=61)
 
-
+    checkpoint = keras.callbacks.ModelCheckpoint('best_model.h5', verbose=1, monitor='val_loss',save_best_only=True, mode='min')
     validation = (Xval, Yval)
 
     # setup tensorboard
@@ -123,12 +123,24 @@ def run_network(data,labels, epochs = 10, batch_size=256):
                 write_graph=True, write_images=True)
 
     model.fit(X, Y, epochs=epochs, batch_size=batch_size, \
-                validation_data=validation, callbacks=[callback])
+                validation_data=validation, callbacks=[callback, checkpoint])
+
+
 
     ### EVALUATE
+    saved_model = keras.models.load_model('best_model.h5')
+
     score = model.evaluate(Xtest, Ytest)
 
     print("Final score : ", score)
+    for i in range(len(score)):
+        print(model.metrics_names[i], " : ", score[i])
+
+    score = saved_model.evaluate(Xtest, Ytest)
+    print("Final score on best model: ", score)
+    for i in range(len(score)):
+        print(model.metrics_names[i], " : ", score[i])
+
 
     return model
 
@@ -161,6 +173,6 @@ if __name__ == "__main__":
 
     print("train")
 
-    run_network(data[0],data[1], epochs = 10, batch_size=256)
+    run_network(data[0],data[1], epochs = 20, batch_size=64)
 
     print("end")
