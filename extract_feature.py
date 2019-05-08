@@ -32,8 +32,9 @@ for root, dirs, files in os.walk('tidigits/disc_4.1.1/tidigits/train'):
             samples, samplingrate = loadAudio(filename)
 
             lmfcc, mspec = mfcc_both(samples)
-            lmfcc = np.multiply(lmfcc, np.dot(np.ones([lmfcc.shape[0], 1]),
-                ratio.reshape(len(ratio),1).T))
+            if False:
+                lmfcc = np.multiply(lmfcc, np.dot(np.ones([lmfcc.shape[0], 1]),
+                    ratio.reshape(len(ratio),1).T))
 
             wordTrans = list(path2info(filename)[2])
             phoneTrans = words2phones(wordTrans, prondict)

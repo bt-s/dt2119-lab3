@@ -196,7 +196,9 @@ def cepstrum(input, nceps):
         array of Cepstral coefficients [N x nceps]
     Note: you can use the function dct from scipy.fftpack.realtransforms
     """
-    return fftpack.dct(input, norm="ortho")[:, 0:nceps]
+
+    # here there was the option norm="ortho"
+    return fftpack.dct(input)[:, 0:nceps]
 
 def dtw(x, y, dist):
     """Dynamic Time Warping.
