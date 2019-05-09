@@ -1,4 +1,4 @@
-prondict = {} 
+prondict = {}
 prondict['o'] = ['ow']
 prondict['z'] = ['z', 'iy', 'r', 'ow']
 prondict['1'] = ['w', 'ah', 'n']
@@ -10,3 +10,4 @@ prondict['6'] = ['s', 'ih', 'k', 's']
 prondict['7'] = ['s', 'eh', 'v', 'ah', 'n']
 prondict['8'] = ['ey', 't']
 prondict['9'] = ['n', 'ay', 'n']
+
