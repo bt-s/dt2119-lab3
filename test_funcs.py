@@ -1,14 +1,10 @@
 import numpy as np
-from lab3_tools import *
-from lab1_proto import mfcc
+from all_tools_proto import mfcc
 from prondict import prondict
-from lab2_proto import concatHMMs
-from lab3_proto import *
 
 ###########################################################
 ######## INITIALIZATION ###################################
 ###########################################################
-
 example = np.load('lab3_example.npz', allow_pickle=True)["example"]
 example.shape=(1,)
 example = example[0]
@@ -18,7 +14,6 @@ all_model = np.load('lab2_models_all.npz', allow_pickle=True)
 isolated = {}
 for digit in prondict.keys():
     isolated[digit] = ['sil'] + prondict[digit] + ['sil']
-
 
 phoneHMMs = one_speaker_model['phoneHMMs'].item()
 
@@ -52,24 +47,20 @@ print("#"*50 + "\n" + "#"*50 + "\n" + "#"*50)
 
 
 filename = './tidigits/disc_4.1.1/tidigits/train/man/nw/z43a.wav'
-#filename = 'tidigits/disc_4.1.1/tidigits/train/man/ae/z9z6531a.wav'
 
 # 4.2 Forced Alignment
-
 samples, samplingrate = loadAudio(filename)
 
 print("Error on Samples : ", np.sum(np.abs(samples - example["samples"])))
-
 
 lmfcc = mfcc(samples)
 lmfcc2 = mfcc(example["samples"])
 
 print(lmfcc-lmfcc2, "\n"*3)
 
-
 print("(size ",lmfcc.shape == example["lmfcc"].shape, ")")
-# check lmfcc
 
+# check lmfcc
 error_lmfcc = np.max(np.abs(lmfcc - example["lmfcc"]))
 print(lmfcc)
 print("\n\n\n\n")
@@ -77,7 +68,6 @@ print(example["lmfcc"])
 
 ratio =  example["lmfcc"] / lmfcc
 
-#np.save("ratio.npy", ratio[0,:])
 print("LMFCC error is : ", error_lmfcc)
 
 if error_lmfcc > 0.1:
@@ -86,38 +76,28 @@ if error_lmfcc > 0.1:
     print("New LMFCC error is : ", error_lmfcc)
 
 wordTrans = list(path2info(filename)[2])
-#print(wordTrans)
-
 
 # phone transcription
 phoneTrans = words2phones(wordTrans, prondict)
 
-
 # Check the result is the same
-
 check = True
-
 for i, e in enumerate(phoneTrans):
     check = check and (e == example["phoneTrans"][i])
 
 print("PhoneTrans is : ", check)
-
 utteranceHMM = concatHMMs(phoneHMMs_all, phoneTrans)
 
 # check the HMM is correct
-
 for k, values in example["utteranceHMM"].items():
     print("Error on ",k, " is : ", \
-        np.max(np.abs(utteranceHMM[k] - example["utteranceHMM"][k]))\
-        , "  ( size:",(utteranceHMM[k].shape == example["utteranceHMM"][k].shape),")")
+            np.max(np.abs(utteranceHMM[k] - example["utteranceHMM"][k]))\
+            , "  ( size:",(utteranceHMM[k].shape == example["utteranceHMM"][k].shape),")")
 
+    stateTrans = [phone + '_' + str(stateid) for phone in phoneTrans \
+            for stateid in range(nstates[phone])]
 
-
-stateTrans = [phone + '_' + str(stateid) for phone in phoneTrans \
-                        for stateid in range(nstates[phone])]
-
-# Check if it is correct
-
+    # Check if it is correct
 check = True
 
 for i, e in enumerate(stateTrans):
@@ -127,30 +107,24 @@ print("StateTrans is : ", check)
 
 
 # aligning states
-
-
 data_log_lik = log_multivariate_normal_density_diag(
-                lmfcc, utteranceHMM["means"], utteranceHMM["covars"])
-
+        lmfcc, utteranceHMM["means"], utteranceHMM["covars"])
 
 error_data_log_lik = np.max(np.abs(data_log_lik - example["obsloglik"]))
 print("data_log_lik error is : ", error_data_log_lik \
         ,"  ( size:",(data_log_lik.shape == example["obsloglik"].shape),")")
 
-
 viterbi_loglik, viterbi_path = viterbi(data_log_lik,
-                np.log(utteranceHMM["startprob"]),
-                np.log(utteranceHMM["transmat"]))
-
+        np.log(utteranceHMM["startprob"]),
+        np.log(utteranceHMM["transmat"]))
 
 print("Viterbi log lik error is : ", np.abs(viterbi_loglik - example["viterbiLoglik"]))
 
 aligned_states = forcedAlignment(lmfcc, phoneHMMs_all, phoneTrans)
 
 check = True
-
 for i, e in enumerate(aligned_states):
     check = check and (e == example["viterbiStateTrans"][i])
 
 print("viterbiStateTrans is : ", check, "  (",len(aligned_states) ==  len(example["viterbiStateTrans"]),")")
-#frames2trans(aligned_states, outfilename='z43a.lab')
+

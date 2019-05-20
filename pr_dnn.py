@@ -1,7 +1,7 @@
 import numpy as np
 import keras
 import sys
-from lab3_tools import path2info
+from all_tools_proto import path2info
 from keras.models import Sequential
 from keras.layers import Dense, Activation
 from keras.utils import np_utils, to_categorical
